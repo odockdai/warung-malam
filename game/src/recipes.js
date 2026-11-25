@@ -1,10 +1,12 @@
 // The menu of Warung Malam: every dish the stall can serve, what station cooks it,
-// and how it is built. Recipes combine in different ways — a dish is a list of steps
-// through the kitchen, so an order pushes the cook to plan a route.
+// and how it is built. The depth is in the sharing: nasi goreng and kwetiau both need the
+// one wok, the two satays both need the one grill — so a rush of mixed orders is a fight
+// over a single fire, and which ticket you light first is the decision the game is about.
+// Dishes that needRice also lean on the rice pot, a second resource to keep an eye on.
 //
-// Each dish: the station that heats it, the garnish that finishes it, the price it
-// earns, and the words a customer uses to order it. Steps are the heart of the depth:
-// prep (at the ingredient shelf) -> heat (at its station) -> plate -> serve.
+// Each dish: the station that heats it, the garnish that finishes it, the price it earns,
+// and the words a customer uses to order it. Every plate runs prep -> heat -> plate -> serve,
+// and heat is a window, not a state — done becomes burned if you don't come back.
 
 export const STATIONS = ['rice', 'wok', 'grill', 'batter', 'plate'];
 
