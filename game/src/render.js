@@ -876,6 +876,51 @@ export function createRenderer(canvas) {
     ctx.beginPath(); ctx.moveTo(697, 500); ctx.quadraticCurveTo(720, 510, 700, 522); ctx.stroke();
   }
 
+
+  // the back of the stall behind the queue: a painted menu board, stools, a drink crate —
+  // warung set dressing that fills the void and makes the place unmistakably itself
+  function drawSetDressing(world) {
+    // a warm back panel so the queue reads against wood, not void
+    const panel = ctx.createLinearGradient(0, 190, 0, 410);
+    panel.addColorStop(0, 'rgba(58,32,40,0.55)');
+    panel.addColorStop(1, 'rgba(30,18,26,0.0)');
+    ctx.fillStyle = panel;
+    ctx.fillRect(120, 190, 1040, 220);
+
+    // the hand-painted menu board hanging at the left of the stall
+    fillRR(140, 196, 132, 100, 6, '#f2e2c0');
+    ctx.strokeStyle = '#8a6a40';
+    ctx.lineWidth = 3;
+    rr(140, 196, 132, 100, 6);
+    ctx.stroke();
+    text('WARUNG', 206, 218, 16, '#8a3030', 'center', '900');
+    text('MALAM', 206, 237, 16, '#8a3030', 'center', '900');
+    ctx.strokeStyle = '#b0a080';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(150, 246); ctx.lineTo(262, 246); ctx.stroke();
+    const menuLines = [['Nasi goreng', '12'], ['Sate ayam', '15'], ['Kwetiau', '13'], ['Martabak', '14']];
+    menuLines.forEach((ln, i) => {
+      text(ln[0], 150, 260 + i * 11, 8, '#4a3a28', 'left', '600');
+      text(ln[1], 260, 260 + i * 11, 8, '#4a3a28', 'right', '600');
+    });
+
+    // a couple of empty plastic stools waiting by the counter's right end
+    for (const sx of [960, 1010]) {
+      ctx.fillStyle = '#c94a3a';
+      fillRR(sx, 396, 34, 8, 3, '#c94a3a');
+      ctx.fillStyle = '#a83a2e';
+      ctx.fillRect(sx + 4, 404, 5, 22);
+      ctx.fillRect(sx + 25, 404, 5, 22);
+    }
+    // a crate of bottled tea at the stall's left foot
+    fillRR(160, 560, 56, 34, 3, '#8a5a2a');
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 2; j++) {
+        fillRR(166 + i * 16, 566 + j * 13, 11, 10, 2, '#c9852e');
+      }
+    }
+  }
+
   // ---------- the cook ----------
   function drawCook(world) {
     const cook = world.cook;
@@ -1009,6 +1054,7 @@ export function createRenderer(canvas) {
   function drawPlay(world) {
     drawBackdrop(world);
     drawStall(world);
+    drawSetDressing(world);
     drawCustomers(world);
     drawCounter();
     drawKitchenClutter(world);
