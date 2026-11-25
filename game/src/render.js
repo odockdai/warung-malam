@@ -726,6 +726,7 @@ export function createRenderer(canvas) {
     ellipse(x + w - 14, y + 26, 15, 6, '#3f6a2f');
 
     // the plate mid-assembly, big and central: leaf plate, the mound lowering in, garnish after
+    const surf = y + 30;
     const midX = x + w / 2 - 40;
     if (world.plating) {
       const dish = DISHES[world.plating.dishKey];
@@ -755,20 +756,20 @@ export function createRenderer(canvas) {
       ctx.strokeStyle = COLOR.lampGlow;
       ctx.lineWidth = 3.5;
       ctx.beginPath();
-      ctx.arc(midX, y - 22, 11, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * prog);
+      ctx.arc(midX, surf - 24, 11, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * prog);
       ctx.stroke();
     }
 
     // finished plates waiting to be served — the plate ready to serve the judge looks for
     world.plated.forEach((p, i) => {
       const px = midX + 2 + i * 2;
-      const py = y + 2 - i * 3;
+      const py = y + 30 - i * 3;
       ellipse(px, py, 38, 13, '#3f6a2f');
       ellipse(px, py - 2, 34, 11, '#4f8240');
-      drawDishIcon(p.dishKey, px, py - 6, 2.9);
+      drawDishIcon(p.dishKey, px, py - 8, 2.9);
       ctx.save();
       ctx.globalAlpha = 0.6 + 0.3 * Math.sin(world.time * 6 + i);
-      text('SERVE', px, y - 22, 13, COLOR.serve, 'center', '800');
+      text('SERVE', px, y + 2, 13, COLOR.serve, 'center', '800');
       ctx.restore();
     });
   }
