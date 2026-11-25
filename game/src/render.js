@@ -1308,18 +1308,51 @@ export function createRenderer(canvas) {
 
   function drawEnd(world) {
     drawPlay(world);
-    ctx.fillStyle = 'rgba(10,6,12,0.72)';
+    ctx.fillStyle = 'rgba(10,6,12,0.74)';
     ctx.fillRect(0, 0, VIEW.width, VIEW.height);
-    fillRR(390, 190, 500, 340, 16, 'rgba(24,14,26,0.97)');
+    // the card glows faintly warm, like the last lamp still burning over a closing stall
+    const glow = ctx.createRadialGradient(640, 360, 40, 640, 360, 420);
+    glow.addColorStop(0, 'rgba(255,180,90,0.12)');
+    glow.addColorStop(1, 'rgba(255,180,90,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(240, 120, 800, 520);
+    fillRR(390, 178, 500, 372, 16, 'rgba(26,15,28,0.97)');
     ctx.strokeStyle = COLOR.lampGlow;
-    rr(390, 190, 500, 340, 16);
+    ctx.lineWidth = 1.5;
+    rr(390, 178, 500, 372, 16);
     ctx.stroke();
-    text('the night is done', 640, 250, 40, COLOR.lampHot, 'center', '900');
-    text(`Rp ${world.coins}`, 640, 316, 44, COLOR.serve, 'center', '900');
-    text(`${world.servedCount} orders served`, 640, 362, 20, COLOR.ink, 'center', '600');
-    text(`${world.lostCount} walked out · ${world.burnedCount} burned`, 640, 392, 16, COLOR.inkDim, 'center', '500');
-    text(`best combo x${world.comboBest}`, 640, 424, 16, COLOR.emberHi, 'center', '600');
-    text('press ENTER for another night', 640, 486, 18, COLOR.ink, 'center', '700');
+    // two little petromax lanterns hanging at the card's top corners
+    for (const lx of [416, 864]) {
+      ctx.strokeStyle = '#6a5335';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(lx, 178); ctx.lineTo(lx, 192); ctx.stroke();
+      const lg = ctx.createRadialGradient(lx, 202, 1, lx, 202, 20);
+      lg.addColorStop(0, 'rgba(255,200,100,0.7)');
+      lg.addColorStop(1, 'rgba(255,200,100,0)');
+      ctx.fillStyle = lg;
+      ctx.fillRect(lx - 20, 190, 40, 34);
+      fillRR(lx - 6, 194, 12, 16, 4, '#c9a54a');
+      circle(lx, 202, 4, '#ffe9b0');
+    }
+    text('the night is done', 640, 246, 38, COLOR.lampHot, 'center', '900');
+    // a thin warm rule under the title
+    ctx.strokeStyle = 'rgba(255,184,77,0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(510, 262); ctx.lineTo(770, 262); ctx.stroke();
+    text(`Rp ${world.coins}`, 640, 318, 46, COLOR.serve, 'center', '900');
+    text('the stall\'s takings', 640, 342, 13, COLOR.inkDim, 'center', '500');
+    // the night's story in a small ledger: what sold, what was lost
+    text(`${world.servedCount} orders served`, 640, 380, 20, COLOR.ink, 'center', '600');
+    text(`${world.lostCount} walked out · ${world.burnedCount} burned`, 640, 408, 15, COLOR.inkDim, 'center', '500');
+    text(`best combo x${world.comboBest}`, 640, 438, 16, COLOR.emberHi, 'center', '600');
+    if (world.newBest) {
+      text('— a new best night —', 640, 466, 14, COLOR.lampHot, 'center', '700');
+    }
+    // the prompt breathes gently
+    ctx.save();
+    ctx.globalAlpha = 0.6 + 0.4 * Math.sin(world.time * 2.5);
+    text('press ENTER for another night', 640, 512, 18, COLOR.ink, 'center', '700');
+    ctx.restore();
   }
 
   return { frame, resize, drawDishIcon };

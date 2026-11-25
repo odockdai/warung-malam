@@ -121,7 +121,7 @@ if (shot) {
       }
       if (world.nightOver) {
         screen = SCREEN_END;
-        if (world.coins > best) { best = world.coins; saveBest(best); }
+        if (world.coins > best) { best = world.coins; saveBest(best); world.newBest = true; }
         status.textContent = `Night over. ${world.servedCount} orders served, Rp ${world.coins} earned.`;
       }
     } else if (screen === SCREEN_END) {
