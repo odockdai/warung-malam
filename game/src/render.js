@@ -726,30 +726,30 @@ export function createRenderer(canvas) {
     ellipse(x + w - 14, y + 26, 15, 6, '#3f6a2f');
 
     // the plate mid-assembly, big and central: leaf plate, the mound lowering in, garnish after
-    const midX = x + w / 2 - 30;
+    const midX = x + w / 2 - 40;
     if (world.plating) {
       const dish = DISHES[world.plating.dishKey];
       const prog = world.plating.progress;
-      // leaf plate
-      ellipse(midX, y + 2, 34, 12, '#3f6a2f');
-      ellipse(midX, y, 30, 10, '#4f8240');
+      // leaf plate, lifted a touch so it clears the cook's silhouette
+      ellipse(midX, y - 2, 38, 13, '#3f6a2f');
+      ellipse(midX, y - 4, 34, 11, '#4f8240');
       // the food settling onto the leaf as plating progresses — slides in from above
       const drop = (1 - Math.min(1, prog * 1.8)) * 26;
       ctx.save();
       ctx.globalAlpha = Math.min(1, prog * 2);
       if (world.plating.dishKey === 'satay' || world.plating.dishKey === 'satayPadang') {
-        drawDishIcon(world.plating.dishKey, midX, y + 2 - drop, 1.7);
+        drawDishIcon(world.plating.dishKey, midX, y - 2 - drop, 2.1);
       } else {
-        ellipse(midX, y - 3 - drop, 23, 9.5, dish.color);
+        ellipse(midX, y - 7 - drop, 25, 10, dish.color);
         // grain texture
         ctx.fillStyle = shade(dish.color, 18);
-        circle(midX - 8, y - 4 - drop, 2.5, ctx.fillStyle);
-        circle(midX + 6, y - 2 - drop, 2.5, ctx.fillStyle);
-        circle(midX + 12, y - 4 - drop, 2.2, ctx.fillStyle);
+        circle(midX - 8, y - 8 - drop, 2.5, ctx.fillStyle);
+        circle(midX + 6, y - 6 - drop, 2.5, ctx.fillStyle);
+        circle(midX + 12, y - 8 - drop, 2.2, ctx.fillStyle);
       }
       // the garnish lands last
       const gar = GARNISH[dish.garnish];
-      if (prog > 0.55) circle(midX + 8, y - 6 - drop, 6, gar.color);
+      if (prog > 0.55) circle(midX + 8, y - 10 - drop, 6, gar.color);
       ctx.restore();
       // plating progress ring
       ctx.strokeStyle = COLOR.lampGlow;
@@ -763,9 +763,9 @@ export function createRenderer(canvas) {
     world.plated.forEach((p, i) => {
       const px = midX + 2 + i * 2;
       const py = y + 2 - i * 3;
-      ellipse(px, py, 34, 12, '#3f6a2f');
-      ellipse(px, py - 2, 30, 10, '#4f8240');
-      drawDishIcon(p.dishKey, px, py - 5, 2.2);
+      ellipse(px, py, 38, 13, '#3f6a2f');
+      ellipse(px, py - 2, 34, 11, '#4f8240');
+      drawDishIcon(p.dishKey, px, py - 6, 2.9);
       ctx.save();
       ctx.globalAlpha = 0.6 + 0.3 * Math.sin(world.time * 6 + i);
       text('SERVE', px, y - 22, 13, COLOR.serve, 'center', '800');
