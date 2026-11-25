@@ -556,7 +556,7 @@ export function createRenderer(canvas) {
       for (let i = 0; i < 7; i++) {
         const fx = cx - 30 + i * 10;
         const flicker = Math.sin(world.time * 18 + i * 2.3) * 0.5 + Math.sin(world.time * 27 + i) * 0.5;
-        const fh = 12 + flicker * 5 + (i % 2) * 3;
+        const fh = 15 + flicker * 6 + (i % 2) * 4;
         // outer flame
         ctx.save();
         ctx.globalAlpha = 0.85;
@@ -576,6 +576,16 @@ export function createRenderer(canvas) {
         ctx.quadraticCurveTo(fx + 2, y + 45, fx + 2.5, y + 50);
         ctx.closePath();
         ctx.fill();
+        ctx.restore();
+      }
+      // ember sparks riding the heat upward — tiny bright flecks that say roaring fire
+      for (let i = 0; i < 4; i++) {
+        const phase = (world.time * 0.8 + i * 0.25) % 1;
+        const sx = cx - 18 + i * 12 + Math.sin(world.time * 3 + i) * 3;
+        const sy = y + 44 - phase * 30;
+        ctx.save();
+        ctx.globalAlpha = (1 - phase) * 0.8;
+        circle(sx, sy, 1.4, COLOR.emberHi);
         ctx.restore();
       }
       // heat shimmer glow
