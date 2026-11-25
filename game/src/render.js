@@ -547,11 +547,27 @@ export function createRenderer(canvas) {
     ctx.ellipse(x + w / 2, y + 26, w / 2 - 10, 10, 0, 0, Math.PI * 2);
     ctx.fillStyle = '#151316';
     ctx.fill();
+    // even empty, the wok catches the lamp — a curved sheen on its inner wall so it reads
+    // as a seasoned steel vessel waiting, not a hole in the table
+    if (!item) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(200,190,180,0.28)';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.ellipse(x + w / 2, y + 27, w / 2 - 18, 6.5, 0, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,200,120,0.16)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.ellipse(x + w / 2, y + 25, w / 2 - 12, 8, 0, 1.15 * Math.PI, 1.85 * Math.PI);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     if (item) {
       drawWokContents(world, item, x + w / 2, y + 24);
       steam(world, x + w / 2, y + 8, flameOn ? 4 : 2);
-      drawHeatRing(world, item, x + w / 2, y - 14);
+      drawHeatRing(world, item, x + w / 2, y + 2);
     }
   }
 
@@ -653,7 +669,7 @@ export function createRenderer(canvas) {
         fillRR(sx - 4, y + 28, 8, 6, 2.5, meat);
       }
       smokeWisps(world, x + w / 2, y, 4);
-      drawHeatRing(world, item, x + w / 2, y - 16);
+      drawHeatRing(world, item, x + w / 2, y + 2);
     }
   }
 
@@ -661,6 +677,25 @@ export function createRenderer(canvas) {
     ellipse(x + w / 2, y + 30, w / 2 - 6, 13, '#3c363c');
     ellipse(x + w / 2, y + 27, w / 2 - 10, 10, '#241f24');
     const item = st.item;
+    // the seasoned griddle surface catches the light even with nothing on it — a soft sheen
+    // so the empty pan reads as a well-used flat griddle, never a black oval void
+    if (!item) {
+      // the oiled griddle surface — a broad warm-metal sheen so it reads as a well-used
+      // flat griddle waiting for batter, never a black oval void
+      ctx.save();
+      const gg = ctx.createLinearGradient(x + 20, y + 18, x + w - 20, y + 34);
+      gg.addColorStop(0, '#4a4048');
+      gg.addColorStop(0.5, '#5c4e56');
+      gg.addColorStop(1, '#3e343c');
+      ctx.fillStyle = gg;
+      ctx.beginPath();
+      ctx.ellipse(x + w / 2, y + 26, w / 2 - 11, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // a bright specular streak where the lamp hits the oil
+      ctx.globalAlpha = 0.5;
+      ellipse(x + w / 2 - 12, y + 23, w / 2 - 34, 3, '#8a7a84');
+      ctx.restore();
+    }
     if (item) {
       const cookedRatio = item.done ? 1 : item.heat;
       const rim = item.burned ? '#241610' : mixColor('#e8b45a', '#8a5220', cookedRatio);
@@ -678,35 +713,46 @@ export function createRenderer(canvas) {
         circle(x + w / 2 - 2, y + 28, 1.8, '#ffe98a');
       }
       steam(world, x + w / 2, y + 10, 3);
-      drawHeatRing(world, item, x + w / 2, y - 14);
+      drawHeatRing(world, item, x + w / 2, y + 2);
     }
   }
 
   // the ring that tells heat progress at a glance: amber while cooking, green when done,
   // red filling as it heads for burnt — readable in a screenshot
   function drawHeatRing(world, item, cx, cy) {
+    // a compact cooking badge pinned just over the food. While cooking: a thin arc filling up.
+    // When done: the food itself glows and a small arrow bounces over it saying grab me now —
+    // never a ring floating up among the hanging ladles.
     ctx.save();
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = 'rgba(0,0,0,0.45)';
-    ctx.beginPath(); ctx.arc(cx, cy, 13, 0, Math.PI * 2); ctx.stroke();
+    ctx.lineWidth = 3.5;
     if (!item.done) {
+      ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+      ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI * 2); ctx.stroke();
       ctx.strokeStyle = COLOR.warn;
-      ctx.beginPath(); ctx.arc(cx, cy, 13, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, item.heat)); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, cy, 10, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, item.heat)); ctx.stroke();
     } else if (!item.burned) {
-      ctx.strokeStyle = COLOR.serve;
-      ctx.beginPath(); ctx.arc(cx, cy, 13, 0, Math.PI * 2); ctx.stroke();
-      // burn danger wedge over it
-      if (item.burn > 0.05) {
-        ctx.strokeStyle = COLOR.angry;
-        ctx.beginPath(); ctx.arc(cx, cy, 13, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * item.burn); ctx.stroke();
-      }
-      // pulse when ready
+      // ready: warm glow on the food + a bouncing grab arrow, burn risk as a shrinking arc
       const p = 0.5 + 0.5 * Math.sin(world.time * 7);
-      ctx.globalAlpha = 0.4 * p;
-      circle(cx, cy, 6, COLOR.serve);
+      ctx.globalAlpha = 0.5 + 0.4 * p;
+      circle(cx, cy + 8, 13, 'rgba(120,255,150,0.25)');
+      ctx.globalAlpha = 1;
+      // burn danger arc closing in
+      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = item.burn > 0.05 ? COLOR.angry : COLOR.serve;
+      ctx.beginPath(); ctx.arc(cx, cy, 10, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * (item.burn > 0.05 ? Math.min(1,item.burn) : 1)); ctx.stroke();
+      // bouncing grab-me arrow over the food
+      const bob = Math.abs(Math.sin(world.time * 5)) * 4;
+      ctx.fillStyle = COLOR.serve;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - 16 - bob);
+      ctx.lineTo(cx - 6, cy - 24 - bob);
+      ctx.lineTo(cx + 6, cy - 24 - bob);
+      ctx.closePath();
+      ctx.fill();
     } else {
       ctx.strokeStyle = '#1c1214';
-      ctx.beginPath(); ctx.arc(cx, cy, 13, 0, Math.PI * 2); ctx.stroke();
+      ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.arc(cx, cy, 10, 0, Math.PI * 2); ctx.stroke();
     }
     ctx.restore();
   }
@@ -814,24 +860,25 @@ export function createRenderer(canvas) {
   // other market-goers drifting past behind the stall — silhouettes that make the night
   // market feel inhabited beyond this one queue
   function drawPassersBy(world) {
+    // distant market-goers on the far side of the street, small and faint and high on the wall —
+    // depth cues (size, height, faintness) make clear these are background, never queue customers
     ctx.save();
     const walkers = [
-      { speed: 22, y: 340, size: 0.9, alpha: 0.34, offset: 0 },
-      { speed: -16, y: 352, size: 0.8, alpha: 0.26, offset: 500 },
-      { speed: 28, y: 336, size: 1.0, alpha: 0.4, offset: 1000 },
+      { speed: 20, y: 250, size: 0.55, alpha: 0.18, offset: 0 },
+      { speed: -14, y: 258, size: 0.5, alpha: 0.14, offset: 700 },
     ];
     for (const wk of walkers) {
       const span = 1500;
       const x = ((world.time * wk.speed + wk.offset) % span + span) % span - 110;
       const s = wk.size;
       ctx.globalAlpha = wk.alpha;
-      ctx.fillStyle = '#14101c';
-      // simple walking silhouette: body + head, legs mid-stride
+      ctx.fillStyle = '#1c1626';
       const stride = Math.sin(world.time * 6 + wk.offset) * 4;
-      circle(x, wk.y - 44 * s, 11 * s, '#14101c');
+      circle(x, wk.y - 44 * s, 11 * s, '#1c1626');
+      ctx.fillStyle = '#1c1626';
       rr(x - 12 * s, wk.y - 36 * s, 24 * s, 42 * s, 8 * s);
       ctx.fill();
-      ctx.strokeStyle = '#14101c';
+      ctx.strokeStyle = '#1c1626';
       ctx.lineWidth = 5 * s;
       ctx.lineCap = 'round';
       ctx.beginPath();
@@ -842,7 +889,6 @@ export function createRenderer(canvas) {
     ctx.restore();
   }
 
-  // a soft glow under the station the cook is heading to — the kitchen answering the move
   function drawStationTargeting(world) {
     if (world.nightOver) return;
     const tx = world.cook.targetX;
@@ -996,6 +1042,29 @@ export function createRenderer(canvas) {
       ctx.fillRect(sx + 4, 404, 5, 22);
       ctx.fillRect(sx + 25, 404, 5, 22);
     }
+    // the neighboring stalls down the row — dim awnings with their own little lamps, so this
+    // is unmistakably one warung in a living night market, not a lone stall in a void
+    for (const n of [ { x: 30, w: 100, lamp: 80 }, { x: 1150, w: 110, lamp: 1200 } ]) {
+      ctx.save();
+      ctx.globalAlpha = 0.55;
+      // distant awning
+      ctx.fillStyle = '#2a1a22';
+      ctx.beginPath();
+      ctx.moveTo(n.x, 175); ctx.lineTo(n.x + n.w, 175); ctx.lineTo(n.x + n.w - 8, 200); ctx.lineTo(n.x + 8, 200);
+      ctx.closePath(); ctx.fill();
+      // its dim lamp glow
+      const lg = ctx.createRadialGradient(n.lamp, 215, 2, n.lamp, 215, 34);
+      lg.addColorStop(0, 'rgba(255,190,90,0.5)');
+      lg.addColorStop(1, 'rgba(255,190,90,0)');
+      ctx.fillStyle = lg;
+      ctx.fillRect(n.lamp - 36, 195, 72, 60);
+      circle(n.lamp, 214, 3.5, '#ffd27a');
+      // a hint of a stall body + a figure tending it
+      ctx.fillStyle = '#1c1420';
+      ctx.fillRect(n.x + 12, 220, n.w - 24, 90);
+      ctx.restore();
+    }
+
     // a crate of bottled tea at the stall's left foot
     fillRR(160, 560, 56, 34, 3, '#8a5a2a');
     for (let i = 0; i < 3; i++) {
