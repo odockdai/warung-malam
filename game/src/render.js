@@ -237,7 +237,8 @@ export function createRenderer(canvas) {
     }
     waitingCustomers.slice(0, 4).forEach((c, i) => drawOrderTicket(world, c, x + 5 + i * 98, y + 20));
     if (waitingCustomers.length > 4) {
-      text('+' + (waitingCustomers.length - 4), x + w - 14, y + 44, 12, COLOR.inkDim, 'center', '800');
+      // overflow count rides in the panel's header line beside ORDERS, well inside the border
+      text('+' + (waitingCustomers.length - 4) + ' more', x + w - 14, y + 12, 10, COLOR.inkDim, 'right', '700');
     }
   }
 
