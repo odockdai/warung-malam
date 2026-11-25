@@ -224,7 +224,7 @@ export function createRenderer(canvas) {
   function drawOrderBoard(world) {
     const x = LAYOUT.orderBoardX, y = LAYOUT.orderBoardY;
     const waitingCustomers = world.customers.filter(c => !c.left && !c.served);
-    const w = 24 + 118 * Math.max(1, Math.min(5, waitingCustomers.length || 1));
+    const w = 16 + 118 * Math.max(1, Math.min(5, waitingCustomers.length || 1)) + 4;
     fillRR(x - 8, y - 6, w, 86, 10, 'rgba(16,10,18,0.82)');
     ctx.strokeStyle = 'rgba(255,184,77,0.28)';
     ctx.lineWidth = 1.5;
@@ -245,12 +245,12 @@ export function createRenderer(canvas) {
     ctx.lineWidth = 1.4;
     rr(x, y, 108, 56, 6);
     ctx.stroke();
-    circle(x + 16, y + 18, 9, dish.color);
-    text(dish.short, x + 30, y + 23, 11, COLOR.ink, 'left', '700');
+    circle(x + 15, y + 18, 9, dish.color);
+    text(dish.short, x + 28, y + 23, 10, COLOR.ink, 'left', '700');
     // how far along this order is: fires lit, plated, or still just a hope
-    const prod = productionState(world, customer.dishKey);
-    const label = prod === 'plated' ? 'SERVE!' : prod === 'done' ? 'done — plate!' : prod === 'cooking' ? 'on the fire…' : 'not started';
-    const labelColor = prod === 'plated' ? COLOR.serve : prod === 'done' ? COLOR.warn : COLOR.inkDim;
+    const prod = productionState(world, customer);
+    const label = prod === 'plated' ? 'SERVE!' : prod === 'plating' ? 'plating…' : prod === 'done' ? 'off the fire' : prod === 'cooking' ? 'on the fire…' : 'in line';
+    const labelColor = prod === 'plated' ? COLOR.serve : prod === 'plating' || prod === 'done' ? COLOR.warn : COLOR.inkDim;
     text(label, x + 10, y + 40, 10, labelColor, 'left', '600');
     const ratio = Math.max(0, customer.patienceLeft / customer.patienceMax);
     ctx.fillStyle = 'rgba(255,255,255,0.12)';
@@ -259,14 +259,32 @@ export function createRenderer(canvas) {
     ctx.fillRect(x + 10, y + 46, 88 * ratio, 5);
   }
 
-  function productionState(world, dishKey) {
-    if (world.plated.some(p => p.dishKey === dishKey) || (world.cook.carrying?.kind === 'plate' && world.cook.carrying.dishKey === dishKey)) return 'plated';
+  // How far along THIS customer's own order is. Production is per dish type, not per ticket,
+  // so units are matched to waiting customers oldest-first: the earliest waiting customer for a
+  // dish owns the plated/ready unit, the next owns the one on the fire, the rest are still queued.
+  // This keeps every ticket honest — a ticket only claims fire or plating when a real unit of its
+  // dish is that far along AND no earlier customer for the same dish is still ahead of it.
+  function productionState(world, customer) {
+    const dishKey = customer.dishKey;
+    // count production units of this dish, most-finished first
+    const units = [];
+    if (world.plated.some(p => p.dishKey === dishKey) || (world.cook.carrying?.kind === 'plate' && world.cook.carrying.dishKey === dishKey)) units.push('plated');
+    if (world.plating && world.plating.dishKey === dishKey) units.push('plating');
     for (const key of Object.keys(world.stations)) {
       const item = world.stations[key].item;
-      if (item && item.dishKey === dishKey) return item.done ? 'done' : 'cooking';
+      if (item && item.dishKey === dishKey && !item.burned) units.push(item.done ? 'done' : 'cooking');
     }
-    if (world.plating && world.plating.dishKey === dishKey) return 'done';
-    if (world.cook.carrying?.kind === 'hot' && world.cook.carrying.dishKey === dishKey) return 'done';
+    if (world.cook.carrying?.kind === 'hot' && world.cook.carrying.dishKey === dishKey) units.push('done');
+    // rank units by progress
+    const rank = { plated: 4, plating: 3, done: 2, cooking: 1 };
+    units.sort((a, b) => rank[b] - rank[a]);
+    // position of this customer among those waiting for the same dish, oldest first
+    const queue = world.customers
+      .filter(c => !c.left && !c.served && c.dishKey === dishKey)
+      .sort((a, b) => a.arrivesAt - b.arrivesAt);
+    const position = queue.findIndex(c => c.id === customer.id);
+    if (position < 0) return 'none';
+    if (position < units.length) return units[position];
     return 'none';
   }
 
@@ -456,12 +474,42 @@ export function createRenderer(canvas) {
     const item = st.item;
     const flameOn = !!item && !item.done;
     if (flameOn) {
-      const f = 0.7 + 0.3 * Math.sin(world.time * 22);
+      // flame tongues licking up under the wok — a row of teardrop flames that flicker and dance
+      const cx = x + w / 2;
+      for (let i = 0; i < 7; i++) {
+        const fx = cx - 30 + i * 10;
+        const flicker = Math.sin(world.time * 18 + i * 2.3) * 0.5 + Math.sin(world.time * 27 + i) * 0.5;
+        const fh = 12 + flicker * 5 + (i % 2) * 3;
+        // outer flame
+        ctx.save();
+        ctx.globalAlpha = 0.85;
+        ctx.fillStyle = COLOR.ember;
+        ctx.beginPath();
+        ctx.moveTo(fx - 5, y + 50);
+        ctx.quadraticCurveTo(fx - 5 - flicker * 2, y + 42, fx, y + 50 - fh);
+        ctx.quadraticCurveTo(fx + 5 + flicker * 2, y + 42, fx + 5, y + 50);
+        ctx.closePath();
+        ctx.fill();
+        // inner bright core
+        ctx.globalAlpha = 0.9;
+        ctx.fillStyle = COLOR.emberHi;
+        ctx.beginPath();
+        ctx.moveTo(fx - 2.5, y + 50);
+        ctx.quadraticCurveTo(fx - 2, y + 45, fx, y + 50 - fh * 0.55);
+        ctx.quadraticCurveTo(fx + 2, y + 45, fx + 2.5, y + 50);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+      // heat shimmer glow
+      const f = 0.6 + 0.4 * Math.sin(world.time * 14);
       ctx.save();
-      ctx.globalAlpha = 0.8 * f;
-      ellipse(x + w / 2, y + 44, w / 2 - 10, 10, COLOR.ember);
-      ctx.globalAlpha = 0.5 * f;
-      ellipse(x + w / 2, y + 44, w / 2 - 4, 7, COLOR.emberHi);
+      ctx.globalAlpha = 0.16 * f;
+      const hg = ctx.createRadialGradient(cx, y + 40, 4, cx, y + 40, 46);
+      hg.addColorStop(0, COLOR.emberHi);
+      hg.addColorStop(1, 'rgba(255,90,38,0)');
+      ctx.fillStyle = hg;
+      ctx.fillRect(cx - 50, y, 100, 64);
       ctx.restore();
     }
     // wok bowl
@@ -703,24 +751,32 @@ export function createRenderer(canvas) {
   }
 
   function steam(world, x, y, n) {
+    // a real rising plume: many soft puffs climbing and spreading and thinning as they cool
     ctx.save();
-    for (let i = 0; i < n; i++) {
-      const phase = (world.time * 0.7 + i / n) % 1;
-      const py = y - phase * 34;
-      const px = x + Math.sin(world.time * 1.6 + i * 2) * (3 + phase * 7);
-      ctx.globalAlpha = (1 - phase) * 0.4;
-      circle(px, py, 3 + phase * 5, 'rgba(238,232,220,0.5)');
+    const count = n * 3;
+    for (let i = 0; i < count; i++) {
+      const phase = (world.time * 0.55 + i / count) % 1;
+      const py = y - phase * 56;
+      const drift = Math.sin(world.time * 1.3 + i * 2.1) * (2 + phase * 12) + phase * 6;
+      const px = x + drift;
+      const size = 2.5 + phase * 8;
+      ctx.globalAlpha = (1 - phase) * (1 - phase) * 0.42;
+      circle(px, py, size, 'rgba(240,234,222,0.55)');
     }
     ctx.restore();
   }
   function smokeWisps(world, x, y, n) {
+    // charcoal smoke: a thicker gray column that drifts off to one side as it rises —
+    // the smell of satay you can almost see
     ctx.save();
-    for (let i = 0; i < n; i++) {
-      const phase = (world.time * 0.55 + i / n) % 1;
-      const py = y - phase * 30;
-      const px = x + Math.sin(world.time * 1.3 + i * 2.4) * (4 + phase * 8);
-      ctx.globalAlpha = (1 - phase) * 0.3;
-      circle(px, py, 2.5 + phase * 5, 'rgba(200,190,180,0.4)');
+    const count = n * 3;
+    for (let i = 0; i < count; i++) {
+      const phase = (world.time * 0.4 + i / count) % 1;
+      const py = y - phase * 64;
+      const px = x + Math.sin(world.time * 1.1 + i * 2.4) * (3 + phase * 9) + phase * 20;
+      const size = 2.5 + phase * 9;
+      ctx.globalAlpha = (1 - phase) * (1 - phase) * 0.34;
+      circle(px, py, size, 'rgba(190,182,172,0.42)');
     }
     ctx.restore();
   }
