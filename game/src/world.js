@@ -239,7 +239,7 @@ export function commandAction(world) {
     return null;
   }
 
-  // heating stations: rice pot is display/prep only for now — wok, grill, batter cook
+  // heating stations: the wok, grill, martabak pan and the rice pot all heat their contents
   if (st.item) {
     if (st.item.burned) {
       // dump the burnt pan — a small penalty already paid when it burned

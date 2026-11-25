@@ -428,8 +428,32 @@ export function createRenderer(canvas) {
       }
       const gar = GARNISH[dish.garnish];
       if (gar) circle(3, -4, 3, gar.color);
+    } else if (dishKey === 'nasiGoreng') {
+      // fried rice: a browned mound with grain texture and the fried egg sliding on top —
+      // the signature look, unmistakable next to the plain rice dishes
+      ellipse(0, 6, 13, 5, '#3f6a2f');
+      ellipse(0, 2, 10, 6, dish.color);
+      // grains
+      ctx.fillStyle = '#a86a34';
+      circle(-4, 0, 1.5, ctx.fillStyle); circle(2, 2, 1.5, ctx.fillStyle); circle(5, 0, 1.3, ctx.fillStyle);
+      // the fried egg, white with a yolk, draped over the top
+      ellipse(1, -2, 7, 4.5, '#f5eede');
+      circle(1.5, -2.5, 2.4, '#e8a83a');
+    } else if (dishKey === 'nasiUduk') {
+      // coconut rice in its banana-leaf cone — pale, pointed, with fried shallots on top
+      ellipse(0, 6, 12, 5, '#3f6a2f');
+      // the leaf cone wrapping up behind the rice
+      ctx.fillStyle = '#4f8240';
+      ctx.beginPath();
+      ctx.moveTo(-9, 6); ctx.lineTo(-6, -8); ctx.lineTo(6, -6); ctx.lineTo(9, 6);
+      ctx.closePath(); ctx.fill();
+      // the pale coconut-milk rice mounded in front
+      ellipse(0, 3, 9, 6, dish.color);
+      // fried shallots sprinkled over — tiny crisp brown flecks
+      ctx.fillStyle = '#b07030';
+      circle(-2, 0, 1.3, ctx.fillStyle); circle(2, 1, 1.2, ctx.fillStyle); circle(0, -1.5, 1.1, ctx.fillStyle);
     } else {
-      // rice mound on a banana-leaf plate
+      // generic rice mound on a banana-leaf plate (fallback)
       ellipse(0, 6, 13, 5, '#3f6a2f');
       ellipse(0, 2, 10, 6, dish.color);
       const gar = GARNISH[dish.garnish];
@@ -487,13 +511,33 @@ export function createRenderer(canvas) {
       ctx.stroke();
     }
 
-    // the rice steamer, lid ajar, always steaming a little — it is rice, it never rests
+    // the rice steamer, lid ajar, always steaming a little — it is rice, it never rests.
+    // when a nasi uduk is simmering inside, the lid sits back and the coconut rice shows;
+    // the heat badge tracks it like any other fire, because it IS one of the four.
+    const item = world.stations.rice.item;
+    const steaming = !!(item && !item.burned);
     ellipse(x + w / 2, y + 34, w / 2 - 8, 12, '#6a7078');
     fillRR(x + 6, y + 30, w - 12, 30, 7, '#7c828c');
     ellipse(x + w / 2, y + 30, w / 2 - 6, 9, '#9aa0ab');
-    ellipse(x + w / 2 - 4, y + 24, 12, 5, '#c8ccd4');
-    ellipse(x + w / 2, y + 28, 15, 5.5, COLOR.riceWhite);
-    steam(world, x + w / 2, y + 12, 3);
+    if (item) {
+      // lid lifted off: the simmering coconut rice visible, steaming harder as it cooks
+      ellipse(x + w / 2, y + 28, 15, 5.5, item.burned ? '#2a1c14' : COLOR.riceWhite);
+      // a golden coconut sheen on the surface
+      if (!item.burned) ellipse(x + w / 2 - 3, y + 26.5, 9, 3, '#e8d8b0');
+      // the lid leans against the steamer's side
+      ctx.save();
+      ctx.translate(x + w - 8, y + 22);
+      ctx.rotate(0.6);
+      ellipse(0, 0, 12, 4.5, '#c8ccd4');
+      ctx.restore();
+      steam(world, x + w / 2, y + 10, item.done ? 3 : 4);
+      drawHeatRing(world, item, x + w / 2, y + 2);
+    } else {
+      // idle: lid ajar, plain steam
+      ellipse(x + w / 2 - 4, y + 24, 12, 5, '#c8ccd4');
+      ellipse(x + w / 2, y + 28, 15, 5.5, COLOR.riceWhite);
+      steam(world, x + w / 2, y + 12, 2);
+    }
   }
 
   function drawWok(world, st, x, y, w) {
