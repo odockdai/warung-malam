@@ -96,6 +96,54 @@ export function createAudio() {
     src.start();
   }
 
+  // a slow pentatonic music-box line, distant like a night-market melody a few stalls over.
+  // original, generated — a handful of notes on a soft bell, spacing itself out. It answers
+  // the night more than the action: a few notes, then quiet, the way music drifts in and out.
+  const MELODY_SCALE = [0, 3, 5, 7, 10]; // minor pentatonic — reads as the night market's own
+  const MELODY_BASE = 440 * Math.pow(2, -5 / 12); // around C4-ish root
+  let melodyAt = 0;
+  let melodyStep = 0;
+  function scheduleMelody(world) {
+    if (!ctx || muted) return;
+    // schedule ahead a little; a note every couple of seconds with gaps, faster as the rush builds
+    const ahead = ctx.currentTime + 0.6;
+    if (melodyAt < ahead) {
+      const rush = 1 - world.clockLeft / 240; // denser as the night peaks
+      if (melodyStep % 5 !== 4 || Math.random() < rush) {
+        const degree = MELODY_SCALE[Math.floor(Math.random() * MELODY_SCALE.length)];
+        const octave = Math.random() < 0.3 ? 2 : 1;
+        const freq = MELODY_BASE * Math.pow(2, degree / 12) * octave;
+        // a soft bell: sine + a quiet octave partial, quick decay
+        bell(freq, 1.6, 0.05);
+      }
+      melodyStep++;
+      const gap = 1.7 - rush * 0.7; // tighter spacing late in the night
+      melodyAt = Math.max(melodyAt, ctx.currentTime) + gap * (0.8 + Math.random() * 0.5);
+    }
+  }
+  function bell(freq, dur, vol) {
+    if (!ctx) return;
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    const partial = ctx.createOscillator();
+    partial.type = 'sine';
+    partial.frequency.value = freq * 2.76; // inharmonic partial — the bell quality
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    const g2 = ctx.createGain();
+    g2.gain.value = 0.3;
+    partial.connect(g2).connect(g);
+    osc.connect(g).connect(master);
+    osc.start(t);
+    osc.stop(t + dur + 0.05);
+    partial.start(t);
+    partial.stop(t + dur + 0.05);
+  }
+
   return {
     /** call on the first user gesture */
     unlock() {
@@ -117,6 +165,7 @@ export function createAudio() {
       const frying = Object.values(world.stations).some(st => st.item && !st.item.done);
       const target = frying ? 0.055 : 0.0;
       sizzleGain.gain.setTargetAtTime(target, ctx.currentTime, 0.18);
+      scheduleMelody(world);
     },
 
     /** event sounds — the world calls these as things happen */

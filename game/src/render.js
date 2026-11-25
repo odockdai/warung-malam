@@ -834,16 +834,39 @@ export function createRenderer(canvas) {
     ctx.moveTo(x - 5, y + 34); ctx.lineTo(x - 5 - walk, y + 58);
     ctx.moveTo(x + 5, y + 34); ctx.lineTo(x + 5 + walk, y + 58);
     ctx.stroke();
-    ctx.fillStyle = '#e8e0d0';
+    // shirt with volume
+    const shirtG = ctx.createLinearGradient(x, y - 2, x, y + 38);
+    shirtG.addColorStop(0, '#f2ead8');
+    shirtG.addColorStop(1, '#cfc4ac');
+    ctx.fillStyle = shirtG;
     rr(x - 17, y - 2 + bob * 0.4, 34, 40, 10);
     ctx.fill();
+    // apron with a strap and a pocket
     ctx.fillStyle = '#8a3030';
     rr(x - 15, y + 10 + bob * 0.4, 30, 29, 6);
     ctx.fill();
+    ctx.fillStyle = '#6a2424';
+    ctx.fillRect(x - 15, y + 10 + bob * 0.4, 30, 4);
+    fillRR(x - 6, y + 24 + bob * 0.4, 12, 10, 2, '#6a2424');
+    // the towel over the shoulder every warung cook carries
+    ctx.strokeStyle = '#d9c9a0';
+    ctx.lineWidth = 5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x + 12, y + 2 + bob * 0.4);
+    ctx.quadraticCurveTo(x + 20, y + 12, x + 15, y + 26 + bob * 0.4);
+    ctx.stroke();
+    // head with simple friendly face
     circle(x, y - 15 + bob * 0.4, 15, '#c98d5e');
     ctx.fillStyle = '#1c1214';
     ctx.beginPath(); ctx.arc(x, y - 21 + bob * 0.4, 15, Math.PI, Math.PI * 2); ctx.fill();
     fillRR(x - 15, y - 25 + bob * 0.4, 30, 7, 3.5, '#c9a54a');
+    // eyes + a working smile
+    circle(x - 5, y - 13 + bob * 0.4, 1.7, '#1c1214');
+    circle(x + 5, y - 13 + bob * 0.4, 1.7, '#1c1214');
+    ctx.strokeStyle = '#1c1214';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(x, y - 8 + bob * 0.4, 5, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
     ctx.strokeStyle = '#c98d5e';
     ctx.lineWidth = 6;
     ctx.lineCap = 'round';
