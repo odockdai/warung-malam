@@ -10,8 +10,8 @@
 //   plate — a dish mid-assembly at the plating counter, garnish going on, a fire behind.
 //   end   — the night-end tally over a quieting stall.
 
-import { STEP } from './config.js';
-import { advance } from './world.js';
+import { STEP } from '../config.js';
+import { advance } from '../world.js';
 import { autopilotStep } from './autopilot.js';
 
 function playForward(world, seconds) {

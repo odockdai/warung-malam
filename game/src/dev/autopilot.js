@@ -13,9 +13,9 @@
 // It walks to the station it means to use and only acts once it stands there, so the
 // motion you see in the screenshots is a real service being run.
 
-import { LAYOUT } from './config.js';
-import { DISHES } from './recipes.js';
-import { commandAction, commandMove, inProduction, nextDishForStation, waitingFor } from './world.js';
+import { LAYOUT } from '../config.js';
+import { DISHES } from '../recipes.js';
+import { commandAction, commandMove, inProduction, nextDishForStation, waitingFor } from '../world.js';
 
 function stationCenter(key) {
   const cfg = LAYOUT.stations[key];

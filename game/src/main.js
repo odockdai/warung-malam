@@ -5,11 +5,11 @@
 import { BEST_KEY, LAYOUT, STEP, VIEW } from './config.js';
 import { createRandom } from './random.js';
 import { advance, commandAction, commandAxis, commandMove, createWorld } from './world.js';
-import { autopilotStep } from './autopilot.js';
+import { autopilotStep } from './dev/autopilot.js';
 import { createInput } from './input.js';
 import { createAudio } from './audio.js';
 import { createRenderer, SCREEN_END, SCREEN_PAUSE, SCREEN_PLAY, SCREEN_TITLE } from './render.js';
-import { stageShot } from './shots.js';
+import { stageShot } from './dev/shots.js';
 
 const params = new URLSearchParams(window.location.search);
 const shot = params.get('shot');
