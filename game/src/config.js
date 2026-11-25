@@ -47,8 +47,8 @@ export const COLOR = {
 export const NIGHT = {
   seconds: 240,
   firstOrderAt: 2,
-  spawnStart: 5.0,     // seconds between orders at the start of the night
-  spawnEnd: 2.8,       // and at peak rush — faster than one cook can plate, so choosing
+  spawnStart: 4.2,     // seconds between orders at the start of the night
+  spawnEnd: 2.2,       // and at peak rush — faster than one cook can plate, so choosing
                        // what to cook next is the game
   patienceStart: 50,   // seconds a customer waits, early
   patienceEnd: 30,     // late in the night
@@ -57,11 +57,13 @@ export const NIGHT = {
 
 // Cooking timings, in seconds, for each heating stage.
 export const COOK = {
-  wokTime: 6.0,        // frying nasi goreng / kwetiau in the wok
-  grillTime: 7.0,      // satay skewers over charcoal
-  batterTime: 7.5,     // martabak setting in the pan
-  burnGrace: 4.5,      // extra seconds after done before the food burns
-  plateTime: 0.9,      // plating a finished dish
+  wokTime: 7.5,        // frying nasi goreng / kwetiau in the wok
+  grillTime: 8.5,      // satay skewers over charcoal
+  batterTime: 9.0,     // martabak setting in the pan
+  burnGrace: 6.5,      // extra seconds after done before the food burns
+  plateTime: 3.2,      // plating a finished dish — laying the rice, the garnish, the egg.
+                       // slow enough that plating is a real step you plan around, and a
+                       // plate mid-assembly is a common sight across the counter
 };
 
 // Scoring.

@@ -14,7 +14,7 @@ import { stageShot } from './shots.js';
 const params = new URLSearchParams(window.location.search);
 const shot = params.get('shot');
 const seedParam = Number.parseInt(params.get('seed') ?? '', 10);
-const seed = Number.isInteger(seedParam) ? seedParam : 24;
+const seed = Number.isInteger(seedParam) ? seedParam : 10;
 
 const canvas = document.getElementById('game');
 const status = document.getElementById('status');

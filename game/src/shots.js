@@ -1,12 +1,14 @@
 // The screenshot scenes behind ?shot=cover|rush|plate|end. Each runs the real simulation
-// forward — the autopilot genuinely takes orders, fires the wok, plates and serves — so
-// every frame is a true moment of the game, and the same seed always paints the same night.
+// forward — the autopilot genuinely takes orders, fires the wok, grill and pan in parallel,
+// plates and serves — so every frame is a true moment of the game, reproducible from its seed.
 //
-// The timings below were chosen by scanning the simulation at fine granularity for the
-// richest honest frame of each kind: the cover catches three fires lit with a full queue
-// and a dish done and waiting; rush is peak chaos late in the night; plate is the moment a
-// dish is mid-assembly at the plating counter; end is the tally. Because the seed is fixed
-// and the sim deterministic, these frames are exactly reproducible.
+// The seeds and times below were chosen by scanning many seeded nights for the richest honest
+// frame of each kind:
+//   cover — three fires lit at once (wok, grill, pan), a full queue of five, orders on the
+//           board in every state from "not started" to "SERVE!", the clock partway down.
+//   rush  — the late-night peak: pressure highest, tickets deep, the cook mid-service.
+//   plate — a dish mid-assembly at the plating counter, garnish going on, a fire behind.
+//   end   — the night-end tally over a quieting stall.
 
 import { STEP } from './config.js';
 import { advance } from './world.js';
@@ -21,9 +23,9 @@ function playForward(world, seconds) {
 }
 
 export function stageShot(world, which) {
-  if (which === 'cover') playForward(world, 149.8);
-  else if (which === 'rush') playForward(world, 149.8);
-  else if (which === 'plate') playForward(world, 148.2);
+  if (which === 'cover') playForward(world, 119);
+  else if (which === 'rush') playForward(world, 163.7);
+  else if (which === 'plate') playForward(world, 120.1);
   else if (which === 'end') playForward(world, 245);
   return world;
 }

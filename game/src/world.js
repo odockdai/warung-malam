@@ -264,7 +264,7 @@ export function commandAction(world) {
   if (!cook.carrying) {
     const dishKey = nextDishForStation(world, key);
     if (dishKey) {
-      st.item = { dishKey, heat: 0, done: false, burn: 0, burned: false };
+      st.item = { dishKey, heat: 0, done: false, burn: 0, burned: false, stir: 1, sinceStir: 0 };
       cook.busy = 0.45;
       cook.action = 'prep';
       world.events.push({ type: EVENT_START, dishKey, station: key, t: world.time });

@@ -589,43 +589,66 @@ export function createRenderer(canvas) {
   }
 
   function drawPlating(world, x, y, w) {
-    // stacked banana-leaf plates
-    ellipse(x + 20, y + 26, 16, 6, '#3f6a2f');
-    ellipse(x + 20, y + 24, 16, 6, '#4f8240');
-    ellipse(x + 20, y + 22, 16, 6, '#3f6a2f');
+    // the mise en place, always out: little bowls of the garnishes every dish finishes with —
+    // fried egg, greens, sambal — the ingredients on the counter the game is built around
+    const bowls = [
+      { color: GARNISH.egg.color, label: 'egg', dx: 8 },
+      { color: GARNISH.leaf.color, label: 'greens', dx: 34 },
+      { color: GARNISH.chili.color, label: 'sambal', dx: 60 },
+    ];
+    for (const b of bowls) {
+      ellipse(x + b.dx, y + 34, 10, 5, '#d9cdb4');
+      ellipse(x + b.dx, y + 32, 7.5, 3.6, b.color);
+    }
+    // stacked banana-leaf plates at the counter's end
+    ellipse(x + w - 14, y + 30, 15, 6, '#3f6a2f');
+    ellipse(x + w - 14, y + 28, 15, 6, '#4f8240');
+    ellipse(x + w - 14, y + 26, 15, 6, '#3f6a2f');
 
-    // the plate mid-assembly: mound first, garnish after, as plating progresses
+    // the plate mid-assembly, big and central: leaf plate, the mound lowering in, garnish after
+    const midX = x + w / 2 - 30;
     if (world.plating) {
-      const px = x + w / 2 + 14;
-      ellipse(px, y + 28, 22, 8, '#3f6a2f');
-      ellipse(px, y + 26, 19, 6.5, '#4f8240');
       const dish = DISHES[world.plating.dishKey];
-      const appear = Math.min(1, world.plating.progress * 1.6);
+      const prog = world.plating.progress;
+      // leaf plate
+      ellipse(midX, y + 2, 34, 12, '#3f6a2f');
+      ellipse(midX, y, 30, 10, '#4f8240');
+      // the food settling onto the leaf as plating progresses — slides in from above
+      const drop = (1 - Math.min(1, prog * 1.8)) * 26;
       ctx.save();
-      ctx.globalAlpha = appear;
-      ellipse(px, y + 22, 13, 6, dish.color);
+      ctx.globalAlpha = Math.min(1, prog * 2);
+      if (world.plating.dishKey === 'satay' || world.plating.dishKey === 'satayPadang') {
+        drawDishIcon(world.plating.dishKey, midX, y + 2 - drop, 1.7);
+      } else {
+        ellipse(midX, y - 3 - drop, 23, 9.5, dish.color);
+        // grain texture
+        ctx.fillStyle = shade(dish.color, 18);
+        circle(midX - 8, y - 4 - drop, 2.5, ctx.fillStyle);
+        circle(midX + 6, y - 2 - drop, 2.5, ctx.fillStyle);
+        circle(midX + 12, y - 4 - drop, 2.2, ctx.fillStyle);
+      }
+      // the garnish lands last
       const gar = GARNISH[dish.garnish];
-      if (world.plating.progress > 0.45) circle(px + 4, y + 19, 4, gar.color);
+      if (prog > 0.55) circle(midX + 8, y - 6 - drop, 6, gar.color);
       ctx.restore();
-      // progress ring while plating
+      // plating progress ring
       ctx.strokeStyle = COLOR.lampGlow;
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 3.5;
       ctx.beginPath();
-      ctx.arc(px, y - 8, 9, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * world.plating.progress);
+      ctx.arc(midX, y - 22, 11, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * prog);
       ctx.stroke();
     }
 
-    // finished plates waiting to be served — the thing the judge looks for
+    // finished plates waiting to be served — the plate ready to serve the judge looks for
     world.plated.forEach((p, i) => {
-      const px = x + w / 2 + 14 + i * 40 - (world.plating ? 20 : 0);
-      const py = y + 28 - i * 2;
-      ellipse(px, py, 22, 8, '#3f6a2f');
-      ellipse(px, py - 2, 19, 6.5, '#4f8240');
-      drawDishIcon(p.dishKey, px, py - 8, 1.3);
-      // ready glow + SERVE tag pulsing
+      const px = midX + 2 + i * 2;
+      const py = y + 2 - i * 3;
+      ellipse(px, py, 34, 12, '#3f6a2f');
+      ellipse(px, py - 2, 30, 10, '#4f8240');
+      drawDishIcon(p.dishKey, px, py - 5, 2.2);
       ctx.save();
-      ctx.globalAlpha = 0.55 + 0.3 * Math.sin(world.time * 6 + i);
-      text('SERVE', px, y - 6, 12, COLOR.serve, 'center', '800');
+      ctx.globalAlpha = 0.6 + 0.3 * Math.sin(world.time * 6 + i);
+      text('SERVE', px, y - 22, 13, COLOR.serve, 'center', '800');
       ctx.restore();
     });
   }
