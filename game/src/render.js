@@ -1115,9 +1115,13 @@ export function createRenderer(canvas) {
     text(`${world.servedCount} served · ${world.lostCount} lost`, 1096, 62, 13, COLOR.inkDim, 'left', '600');
 
     if (world.combo >= 2) {
+      // combo rides under the earnings, where the eye already is — a streak being built
+      const pulse = 1 + 0.08 * Math.sin(world.time * 6);
       ctx.save();
-      ctx.globalAlpha = 0.85;
-      text(`x${world.combo} combo`, 30, 130, 18, COLOR.emberHi, 'left', '800');
+      ctx.translate(1168, 96);
+      ctx.scale(pulse, pulse);
+      ctx.globalAlpha = 0.9;
+      text(`x${world.combo} combo`, 0, 0, 19, COLOR.emberHi, 'right', '800');
       ctx.restore();
     }
 
