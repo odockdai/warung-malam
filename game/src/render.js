@@ -240,23 +240,23 @@ export function createRenderer(canvas) {
 
   function drawOrderTicket(world, customer, x, y) {
     const dish = DISHES[customer.dishKey];
-    fillRR(x, y, 108, 56, 6, 'rgba(42,30,46,0.95)');
+    fillRR(x, y, 92, 56, 6, 'rgba(42,30,46,0.95)');
     ctx.strokeStyle = dish.color;
     ctx.lineWidth = 1.4;
-    rr(x, y, 108, 56, 6);
+    rr(x, y, 92, 56, 6);
     ctx.stroke();
-    circle(x + 15, y + 18, 9, dish.color);
-    text(dish.short, x + 28, y + 23, 10, COLOR.ink, 'left', '700');
+    circle(x + 13, y + 17, 8, dish.color);
+    text(dish.short, x + 25, y + 22, 9, COLOR.ink, 'left', '700');
     // how far along this order is: fires lit, plated, or still just a hope
     const prod = productionState(world, customer);
-    const label = prod === 'plated' ? 'SERVE!' : prod === 'plating' ? 'plating…' : prod === 'done' ? 'off the fire' : prod === 'cooking' ? 'on the fire…' : 'in line';
+    const label = prod === 'plated' ? 'SERVE!' : prod === 'plating' ? 'plating…' : prod === 'done' ? 'off fire' : prod === 'cooking' ? 'cooking…' : 'in line';
     const labelColor = prod === 'plated' ? COLOR.serve : prod === 'plating' || prod === 'done' ? COLOR.warn : COLOR.inkDim;
-    text(label, x + 10, y + 40, 10, labelColor, 'left', '600');
+    text(label, x + 8, y + 39, 9, labelColor, 'left', '600');
     const ratio = Math.max(0, customer.patienceLeft / customer.patienceMax);
     ctx.fillStyle = 'rgba(255,255,255,0.12)';
-    ctx.fillRect(x + 10, y + 46, 88, 5);
+    ctx.fillRect(x + 8, y + 46, 76, 5);
     ctx.fillStyle = ratio > 0.5 ? COLOR.serve : ratio > 0.25 ? COLOR.warn : COLOR.angry;
-    ctx.fillRect(x + 10, y + 46, 88 * ratio, 5);
+    ctx.fillRect(x + 8, y + 46, 76 * ratio, 5);
   }
 
   // How far along THIS customer's own order is. Production is per dish type, not per ticket,
@@ -308,6 +308,12 @@ export function createRenderer(canvas) {
     ctx.globalAlpha = c.left && c.angry ? 0.85 : 1;
 
     ellipse(x, y + 118, 34, 9, 'rgba(0,0,0,0.35)');
+    // legs and feet — the queue stands on the street, it doesn't hover
+    ctx.fillStyle = shade(SHIRT[c.variant], -40);
+    fillRR(x - 20, y + 84 + bob * 0.5, 16, 32, 5, shade(SHIRT[c.variant], -40));
+    fillRR(x + 4, y + 84 + bob * 0.5, 16, 32, 5, shade(SHIRT[c.variant], -40));
+    ellipse(x - 12, y + 117, 11, 5, '#2a1c14');
+    ellipse(x + 12, y + 117, 11, 5, '#2a1c14');
     // torso with a little volume — lit warm from the lamp above, darker at the hem
     const shirtGrad = ctx.createLinearGradient(x, y + 32 + bob, x, y + 100);
     shirtGrad.addColorStop(0, shade(SHIRT[c.variant], 22));
@@ -345,21 +351,38 @@ export function createRenderer(canvas) {
       ctx.stroke();
     }
 
+    // arms hanging naturally at the sides, hands slightly forward — people waiting, relaxed
+    ctx.strokeStyle = SKIN[c.variant];
+    ctx.lineWidth = 7;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x - 24, y + 42 + bob);
+    ctx.quadraticCurveTo(x - 30, y + 62 + bob, x - 26, y + 76 + bob);
+    ctx.moveTo(x + 24, y + 42 + bob);
+    ctx.quadraticCurveTo(x + 30, y + 62 + bob, x + 26, y + 76 + bob);
+    ctx.stroke();
+
     // order bubble: big readable dish icon + patience bar
     if (!c.served && !c.left) {
       const by = y - 88 + bob;
-      fillRR(x - 42, by, 84, 52, 10, 'rgba(245,234,214,0.95)');
+      fillRR(x - 46, by - 2, 92, 58, 11, 'rgba(245,234,214,0.96)');
+      ctx.strokeStyle = 'rgba(120,80,40,0.5)';
+      ctx.lineWidth = 1.5;
+      rr(x - 46, by - 2, 92, 58, 11);
+      ctx.stroke();
       ctx.beginPath();
-      ctx.moveTo(x - 2, by + 52); ctx.lineTo(x + 10, by + 52); ctx.lineTo(x + 3, by + 62);
+      ctx.moveTo(x - 2, by + 56); ctx.lineTo(x + 10, by + 56); ctx.lineTo(x + 3, by + 66);
       ctx.closePath();
-      ctx.fillStyle = 'rgba(245,234,214,0.95)';
+      ctx.fillStyle = 'rgba(245,234,214,0.96)';
       ctx.fill();
-      drawDishIcon(c.dishKey, x, by + 25, 1.9);
+      drawDishIcon(c.dishKey, x, by + 24, 2.5);
+      // patience: the thick bar across the bubble's foot, impossible to miss
       const ratio = Math.max(0, c.patienceLeft / c.patienceMax);
-      ctx.fillStyle = 'rgba(0,0,0,0.35)';
-      ctx.fillRect(x - 36, by + 56, 72, 5);
+      ctx.fillStyle = 'rgba(60,40,30,0.5)';
+      rr(x - 40, by + 60, 80, 8, 4);
+      ctx.fill();
       ctx.fillStyle = ratio > 0.5 ? COLOR.serve : ratio > 0.25 ? COLOR.warn : COLOR.angry;
-      ctx.fillRect(x - 36, by + 56, 72 * ratio, 5);
+      if (ratio > 0.04) { rr(x - 40, by + 60, Math.max(10, 80 * ratio), 8, 4); ctx.fill(); }
     }
 
     if (c.payFlash > 0) {
@@ -782,6 +805,63 @@ export function createRenderer(canvas) {
   }
 
 
+
+
+  // other market-goers drifting past behind the stall — silhouettes that make the night
+  // market feel inhabited beyond this one queue
+  function drawPassersBy(world) {
+    ctx.save();
+    const walkers = [
+      { speed: 22, y: 340, size: 0.9, alpha: 0.34, offset: 0 },
+      { speed: -16, y: 352, size: 0.8, alpha: 0.26, offset: 500 },
+      { speed: 28, y: 336, size: 1.0, alpha: 0.4, offset: 1000 },
+    ];
+    for (const wk of walkers) {
+      const span = 1500;
+      const x = ((world.time * wk.speed + wk.offset) % span + span) % span - 110;
+      const s = wk.size;
+      ctx.globalAlpha = wk.alpha;
+      ctx.fillStyle = '#14101c';
+      // simple walking silhouette: body + head, legs mid-stride
+      const stride = Math.sin(world.time * 6 + wk.offset) * 4;
+      circle(x, wk.y - 44 * s, 11 * s, '#14101c');
+      rr(x - 12 * s, wk.y - 36 * s, 24 * s, 42 * s, 8 * s);
+      ctx.fill();
+      ctx.strokeStyle = '#14101c';
+      ctx.lineWidth = 5 * s;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x - 5 * s, wk.y + 4 * s); ctx.lineTo(x - 5 * s - stride, wk.y + 30 * s);
+      ctx.moveTo(x + 5 * s, wk.y + 4 * s); ctx.lineTo(x + 5 * s + stride, wk.y + 30 * s);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // a soft glow under the station the cook is heading to — the kitchen answering the move
+  function drawStationTargeting(world) {
+    if (world.nightOver) return;
+    const tx = world.cook.targetX;
+    let bestKey = null, bestDist = 1e9;
+    for (const key of Object.keys(LAYOUT.stations)) {
+      const cfg = LAYOUT.stations[key];
+      const cx = cfg.x + cfg.w / 2;
+      const d = Math.abs(tx - cx);
+      if (d < bestDist) { bestDist = d; bestKey = key; }
+    }
+    if (!bestKey || bestDist > 90) return;
+    const cfg = LAYOUT.stations[bestKey];
+    const moving = Math.abs(world.cook.targetX - world.cook.x) > 8;
+    ctx.save();
+    ctx.globalAlpha = moving ? 0.5 : 0.28;
+    const gg = ctx.createRadialGradient(cfg.x + cfg.w / 2, cfg.y + 40, 4, cfg.x + cfg.w / 2, cfg.y + 40, cfg.w / 2 + 20);
+    gg.addColorStop(0, 'rgba(255,214,120,0.5)');
+    gg.addColorStop(1, 'rgba(255,214,120,0)');
+    ctx.fillStyle = gg;
+    ctx.fillRect(cfg.x - 16, cfg.y, cfg.w + 32, cfg.h);
+    ctx.restore();
+  }
+
   // cosmetic particle bursts keyed off recent events — pure juice, no gameplay effect
   function drawJuice(world) {
     // ember sparks drifting up from the charcoal grill whenever satay is on
@@ -926,6 +1006,11 @@ export function createRenderer(canvas) {
     const cook = world.cook;
     const x = cook.x, y = cook.y;
     const moving = Math.abs(cook.targetX - x) > 4 || cook.moveAxis !== 0;
+    // the protagonist reads larger than everything else on the line — scale around the feet
+    ctx.save();
+    ctx.translate(x, y + 60);
+    ctx.scale(1.24, 1.24);
+    ctx.translate(-x, -(y + 60));
     const bob = Math.abs(Math.sin(world.time * 8)) * (moving ? 2.5 : 0.6);
     ellipse(x, y + 60, 26, 7, 'rgba(0,0,0,0.4)');
     ctx.strokeStyle = '#2c2430';
@@ -995,6 +1080,7 @@ export function createRenderer(canvas) {
         drawDishIcon(cook.carrying.dishKey, x, cy - 8, 1.2);
       }
     }
+    ctx.restore();
   }
 
   // ---------- HUD ----------
@@ -1055,9 +1141,11 @@ export function createRenderer(canvas) {
     drawBackdrop(world);
     drawStall(world);
     drawSetDressing(world);
+    drawPassersBy(world);
     drawCustomers(world);
     drawCounter();
     drawKitchenClutter(world);
+    drawStationTargeting(world);
     drawStations(world);
     drawCook(world);
     drawJuice(world);
