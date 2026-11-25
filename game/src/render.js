@@ -88,10 +88,10 @@ export function createRenderer(canvas) {
     // a pale crescent moon high over the market
     ctx.save();
     ctx.globalAlpha = 0.8;
-    circle(1120, 68, 22, '#e8e2d0');
+    circle(880, 60, 20, '#e8e2d0');
     ctx.globalAlpha = 0.9;
     ctx.fillStyle = COLOR.sky0;
-    ctx.beginPath(); ctx.arc(1112, 62, 20, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(873, 55, 18, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
     // faint drifting clouds, lit faintly warm from the market below
     ctx.save();
@@ -396,8 +396,15 @@ export function createRenderer(canvas) {
     }
 
     if (c.payFlash > 0) {
-      ctx.globalAlpha = c.payFlash;
-      text('+Rp', x + 26, y - 10 - (1 - c.payFlash) * 40, 20, COLOR.lampHot, 'left', '800');
+      // the payment pops right at the customer's order bubble and rises only a little —
+      // anchored, clearly a reward for serving THIS customer, never a stray float in empty air
+      const rise = (1 - c.payFlash) * 18;
+      ctx.globalAlpha = Math.min(1, c.payFlash * 1.6);
+      const payY = y - 96 - rise;
+      // a small coin disc behind the amount so it reads as money changing hands
+      circle(x + 34, payY - 6, 11, '#c9a54a');
+      circle(x + 34, payY - 6, 8, '#e8c96a');
+      text('+Rp', x + 46, payY, 15, COLOR.lampHot, 'left', '800');
     }
     ctx.restore();
   }
@@ -1086,21 +1093,25 @@ export function createRenderer(canvas) {
     ctx.fillStyle = panel;
     ctx.fillRect(120, 190, 1040, 220);
 
-    // the hand-painted menu board hanging at the left of the stall
-    fillRR(140, 196, 132, 100, 6, '#f2e2c0');
+    // the hand-painted menu board hanging at the left of the stall — the full roster,
+    // every dish a ticket can ask for, or the stall contradicts itself
+    fillRR(140, 192, 132, 118, 6, '#f2e2c0');
     ctx.strokeStyle = '#8a6a40';
     ctx.lineWidth = 3;
-    rr(140, 196, 132, 100, 6);
+    rr(140, 192, 132, 118, 6);
     ctx.stroke();
-    text('WARUNG', 206, 218, 16, '#8a3030', 'center', '900');
-    text('MALAM', 206, 237, 16, '#8a3030', 'center', '900');
+    text('WARUNG', 206, 212, 15, '#8a3030', 'center', '900');
+    text('MALAM', 206, 229, 15, '#8a3030', 'center', '900');
     ctx.strokeStyle = '#b0a080';
     ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(150, 246); ctx.lineTo(262, 246); ctx.stroke();
-    const menuLines = [['Nasi goreng', '12'], ['Sate ayam', '15'], ['Kwetiau', '13'], ['Martabak', '14']];
+    ctx.beginPath(); ctx.moveTo(150, 236); ctx.lineTo(262, 236); ctx.stroke();
+    const menuLines = [
+      ['Nasi goreng', '12'], ['Kwetiau', '13'], ['Sate ayam', '15'],
+      ['Martabak', '14'], ['Nasi uduk', '11'], ['Sate padang', '17'],
+    ];
     menuLines.forEach((ln, i) => {
-      text(ln[0], 150, 260 + i * 11, 8, '#4a3a28', 'left', '600');
-      text(ln[1], 260, 260 + i * 11, 8, '#4a3a28', 'right', '600');
+      text(ln[0], 148, 250 + i * 10, 7.5, '#4a3a28', 'left', '600');
+      text(ln[1], 262, 250 + i * 10, 7.5, '#4a3a28', 'right', '600');
     });
 
     // a couple of empty plastic stools waiting by the counter's right end
