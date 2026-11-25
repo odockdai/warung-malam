@@ -309,6 +309,13 @@ export function createRenderer(canvas) {
     const mood = c.served ? MOOD_PATIENT : moodOf(c);
     ctx.save();
     ctx.globalAlpha = c.left && c.angry ? 0.85 : 1;
+    // every body a little different — height and breadth vary by the customer's own id, so the
+    // queue reads as individuals, not copies of one clip-art figure
+    const hVar = 0.92 + ((c.id * 37) % 5) * 0.04;   // 0.92 .. 1.08 height
+    const wVar = 0.9 + ((c.id * 53) % 4) * 0.07;    // 0.90 .. 1.11 breadth
+    ctx.translate(x, y + 118);
+    ctx.scale(wVar, hVar);
+    ctx.translate(-x, -(y + 118));
 
     ellipse(x, y + 118, 34, 9, 'rgba(0,0,0,0.35)');
     // legs and feet — the queue stands on the street, it doesn't hover
