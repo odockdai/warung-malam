@@ -503,11 +503,19 @@ export function createRenderer(canvas) {
     ctx.fillStyle = '#4a3524';
     fillRR(x - 16, cy - 30, 46, 30, 3, '#54402c');
     fillRR(x + 36, cy - 30, 46, 30, 3, '#54402c');
-    // greens in the left crate
+    // leafy greens in the left crate — read as a bunch of leaves, not blobs
     ctx.fillStyle = '#4a7a3a';
-    circle(x - 6, cy - 30, 5, '#4a7a3a'); circle(x + 6, cy - 32, 5, '#558a44'); circle(x + 16, cy - 29, 4.5, '#3f6a30');
-    // eggs in the right crate
-    circle(x + 46, cy - 32, 4.5, '#f2e2c0'); circle(x + 58, cy - 30, 4.5, '#ead8b4'); circle(x + 70, cy - 33, 4.5, '#f2e2c0');
+    for (const [gx, gy, gr] of [[-8, -32, 6], [2, -34, 7], [12, -31, 6], [6, -28, 5]]) {
+      // a leaf: oval with a lighter vein
+      ellipse(x + gx, cy + gy, gr, gr * 0.6, '#558a44');
+      ctx.strokeStyle = '#3f6a30';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x + gx - gr * 0.7, cy + gy); ctx.lineTo(x + gx + gr * 0.7, cy + gy); ctx.stroke();
+    }
+    // eggs in the right crate — pale ovals in a little nest, clearly eggs
+    for (const [ex, ey] of [[46, -32], [58, -30], [70, -33], [52, -28], [64, -28]]) {
+      ellipse(x + ex, cy + ey, 4.5, 3.6, '#f2e2c0');
+    }
     // a bunch of red chilis hanging off the crate edge
     ctx.strokeStyle = '#b03020';
     ctx.lineWidth = 3;
