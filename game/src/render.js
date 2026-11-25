@@ -224,7 +224,7 @@ export function createRenderer(canvas) {
   function drawOrderBoard(world) {
     const x = LAYOUT.orderBoardX, y = LAYOUT.orderBoardY;
     const waitingCustomers = world.customers.filter(c => !c.left && !c.served);
-    const w = 16 + 118 * Math.max(1, Math.min(5, waitingCustomers.length || 1)) + 4;
+    const w = 12 + 98 * Math.max(1, Math.min(4, waitingCustomers.length || 1));
     fillRR(x - 8, y - 6, w, 86, 10, 'rgba(16,10,18,0.82)');
     ctx.strokeStyle = 'rgba(255,184,77,0.28)';
     ctx.lineWidth = 1.5;
@@ -235,7 +235,10 @@ export function createRenderer(canvas) {
       text('— quiet for a breath —', x + 8, y + 52, 14, COLOR.inkDim, 'left', '500');
       return;
     }
-    waitingCustomers.slice(0, 5).forEach((c, i) => drawOrderTicket(world, c, x + 6 + i * 118, y + 20));
+    waitingCustomers.slice(0, 4).forEach((c, i) => drawOrderTicket(world, c, x + 5 + i * 98, y + 20));
+    if (waitingCustomers.length > 4) {
+      text('+' + (waitingCustomers.length - 4), x + w - 14, y + 44, 12, COLOR.inkDim, 'center', '800');
+    }
   }
 
   function drawOrderTicket(world, customer, x, y) {
@@ -784,8 +787,8 @@ export function createRenderer(canvas) {
       const drift = Math.sin(world.time * 1.3 + i * 2.1) * (2 + phase * 12) + phase * 6;
       const px = x + drift;
       const size = 2.5 + phase * 8;
-      ctx.globalAlpha = (1 - phase) * (1 - phase) * 0.42;
-      circle(px, py, size, 'rgba(240,234,222,0.55)');
+      ctx.globalAlpha = (1 - phase) * (1 - phase) * 0.55;
+      circle(px, py, size, 'rgba(245,240,230,0.68)');
     }
     ctx.restore();
   }
@@ -799,8 +802,8 @@ export function createRenderer(canvas) {
       const py = y - phase * 64;
       const px = x + Math.sin(world.time * 1.1 + i * 2.4) * (3 + phase * 9) + phase * 20;
       const size = 2.5 + phase * 9;
-      ctx.globalAlpha = (1 - phase) * (1 - phase) * 0.34;
-      circle(px, py, size, 'rgba(190,182,172,0.42)');
+      ctx.globalAlpha = (1 - phase) * (1 - phase) * 0.5;
+      circle(px, py, size, 'rgba(205,196,186,0.6)');
     }
     ctx.restore();
   }
