@@ -85,6 +85,25 @@ export function createRenderer(canvas) {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, VIEW.width, VIEW.height);
 
+    // a pale crescent moon high over the market
+    ctx.save();
+    ctx.globalAlpha = 0.8;
+    circle(1120, 68, 22, '#e8e2d0');
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = COLOR.sky0;
+    ctx.beginPath(); ctx.arc(1112, 62, 20, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    // faint drifting clouds, lit faintly warm from the market below
+    ctx.save();
+    for (let i = 0; i < 3; i++) {
+      const cx = ((world.time * 4 + i * 480) % 1500) - 110;
+      const cy = 50 + i * 34;
+      ctx.globalAlpha = 0.1;
+      ellipse(cx, cy, 90, 14, '#8a6a8a');
+      ellipse(cx + 40, cy - 6, 60, 11, '#8a6a8a');
+    }
+    ctx.restore();
+
     // string lights sagging across the top
     ctx.save();
     for (let i = 0; i < 16; i++) {
@@ -118,6 +137,18 @@ export function createRenderer(canvas) {
     ctx.fillRect(0, 408, VIEW.width, VIEW.height - 408);
     ctx.fillStyle = COLOR.groundHi;
     ctx.fillRect(0, 408, VIEW.width, 10);
+    // warm lamplight pooling on the street before the stall, and a faint sheen
+    const pool = ctx.createRadialGradient(640, 470, 20, 640, 520, 480);
+    pool.addColorStop(0, 'rgba(255,170,80,0.14)');
+    pool.addColorStop(1, 'rgba(255,170,80,0)');
+    ctx.fillStyle = pool;
+    ctx.fillRect(0, 408, VIEW.width, VIEW.height - 408);
+    // the street's faint reflection of the awning's warm stripe
+    ctx.save();
+    ctx.globalAlpha = 0.05;
+    ctx.fillStyle = '#c96a3a';
+    ctx.fillRect(140, 430, 1000, 60);
+    ctx.restore();
   }
 
   // ---------- stall structure ----------
@@ -259,10 +290,20 @@ export function createRenderer(canvas) {
     ctx.globalAlpha = c.left && c.angry ? 0.85 : 1;
 
     ellipse(x, y + 118, 34, 9, 'rgba(0,0,0,0.35)');
-    ctx.fillStyle = SHIRT[c.variant];
+    // torso with a little volume — lit warm from the lamp above, darker at the hem
+    const shirtGrad = ctx.createLinearGradient(x, y + 32 + bob, x, y + 100);
+    shirtGrad.addColorStop(0, shade(SHIRT[c.variant], 22));
+    shirtGrad.addColorStop(0.5, SHIRT[c.variant]);
+    shirtGrad.addColorStop(1, shade(SHIRT[c.variant], -22));
+    ctx.fillStyle = shirtGrad;
     rr(x - 27, y + 32 + bob, 54, 70, 16);
     ctx.fill();
+    // skin with a warm rim on the lamp side
     circle(x, y + 12 + bob, 22, SKIN[c.variant]);
+    ctx.save();
+    ctx.globalAlpha = 0.3;
+    circle(x - 6, y + 5 + bob, 14, shade(SKIN[c.variant], 30));
+    ctx.restore();
     ctx.fillStyle = '#1c1214';
     ctx.beginPath();
     ctx.arc(x, y + 5 + bob, 22, Math.PI, Math.PI * 2);
@@ -466,6 +507,14 @@ export function createRenderer(canvas) {
       circle(cx - 7, cy - toss, 2, ctx.fillStyle);
       circle(cx + 4, cy + 1 - toss, 2, ctx.fillStyle);
       circle(cx + 10, cy - 1 - toss, 1.8, ctx.fillStyle);
+      // the gloss of hot oil — a couple of bright specks that say fresh off the fire
+      if (!item.burned) {
+        ctx.save();
+        ctx.globalAlpha = 0.55;
+        circle(cx - 3, cy - 1 - toss, 1.1, '#ffeedd');
+        circle(cx + 8, cy + 1 - toss, 0.9, '#ffe8cc');
+        ctx.restore();
+      }
     }
     if (tossing) {
       const t = world.time * 9;
@@ -726,6 +775,51 @@ export function createRenderer(canvas) {
     }
   }
 
+
+  // the clutter of a working stall in the band behind the cook: hanging tools, sauce jars,
+  // the gas canister — fills the wall and tells you a real kitchen runs here
+  function drawKitchenClutter(world) {
+    // a bamboo shelf rail along the back wall
+    ctx.fillStyle = '#3a2a1e';
+    ctx.fillRect(150, 492, 980, 6);
+    // hanging ladles + a spatula + the wok ladle, swaying slightly
+    const tools = [230, 280, 330, 900, 950];
+    tools.forEach((tx, i) => {
+      const sway = Math.sin(world.time * 0.9 + i * 1.4) * 2;
+      ctx.strokeStyle = '#6a5335';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(tx, 498); ctx.lineTo(tx + sway, 524); ctx.stroke();
+      if (i % 2 === 0) {
+        // ladle cup
+        ellipse(tx + sway, 528, 7, 5, '#8a8578');
+      } else {
+        // spatula blade
+        fillRR(tx + sway - 5, 524, 10, 12, 2, '#7a7570');
+      }
+    });
+    // sauce jars on the shelf: kecap manis, sambal, oil — little labeled bottles
+    const jars = [
+      { x: 430, color: '#3a1a10', cap: '#c9a54a' },  // kecap
+      { x: 462, color: '#b03020', cap: '#d9d0c0' },  // sambal
+      { x: 494, color: '#c9852e', cap: '#4a4a4a' },  // oil
+      { x: 526, color: '#5a3010', cap: '#c9a54a' },  // soy
+    ];
+    for (const j of jars) {
+      fillRR(j.x, 470, 20, 26, 3, j.color);
+      fillRR(j.x + 4, 466, 12, 6, 2, j.cap);
+      ctx.save();
+      ctx.globalAlpha = 0.35;
+      fillRR(j.x + 3, 472, 4, 20, 2, '#ffeedd');
+      ctx.restore();
+    }
+    // the green gas canister under the shelf, feeding the burners
+    fillRR(680, 500, 34, 40, 6, '#3f6a4a');
+    fillRR(690, 494, 14, 10, 3, '#2f4a38');
+    ctx.strokeStyle = '#2a2a2a';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(697, 500); ctx.quadraticCurveTo(720, 510, 700, 522); ctx.stroke();
+  }
+
   // ---------- the cook ----------
   function drawCook(world) {
     const cook = world.cook;
@@ -838,6 +932,7 @@ export function createRenderer(canvas) {
     drawStall(world);
     drawCustomers(world);
     drawCounter();
+    drawKitchenClutter(world);
     drawStations(world);
     drawCook(world);
     drawJuice(world);

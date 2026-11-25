@@ -23,7 +23,7 @@ function playForward(world, seconds) {
 }
 
 export function stageShot(world, which) {
-  if (which === 'cover') playForward(world, 119);
+  if (which === 'cover') playForward(world, 120.3);
   else if (which === 'rush') playForward(world, 163.7);
   else if (which === 'plate') playForward(world, 120.1);
   else if (which === 'end') playForward(world, 245);

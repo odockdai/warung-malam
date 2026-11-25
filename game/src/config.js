@@ -18,11 +18,11 @@ export const LAYOUT = {
   orderBoardX: 24,
   orderBoardY: 18,
   stations: {
-    rice:   { x: 130, y: 545, w: 150, h: 130, label: 'rice pot' },
-    wok:    { x: 335, y: 545, w: 175, h: 130, label: 'wok' },
-    grill:  { x: 565, y: 545, w: 175, h: 130, label: 'satay grill' },
-    batter: { x: 795, y: 545, w: 150, h: 130, label: 'martabak pan' },
-    plate:  { x: 1000, y: 545, w: 175, h: 130, label: 'plating counter' },
+    rice:   { x: 128, y: 528, w: 152, h: 142, label: 'rice pot' },
+    wok:    { x: 333, y: 528, w: 177, h: 142, label: 'wok' },
+    grill:  { x: 563, y: 528, w: 177, h: 142, label: 'satay grill' },
+    batter: { x: 793, y: 528, w: 152, h: 142, label: 'martabak pan' },
+    plate:  { x: 998, y: 528, w: 177, h: 142, label: 'plating counter' },
   },
 };
 
